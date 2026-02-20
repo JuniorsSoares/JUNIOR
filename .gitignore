@@ -2,6 +2,9 @@
 node_modules/
 npm-debug.log*
 
+# Scripts temporários
+*.bat
+
 # Build output
 dist/
 dist-ssr/
