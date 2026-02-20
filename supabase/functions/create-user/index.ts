@@ -58,8 +58,16 @@ Deno.serve(async (req: Request) => {
         const body = await req.json();
         const { email, password, fullName, unitName, role } = body;
 
-        if (!email || !password || !fullName || !unitName || !role) {
+        if (!email || !password || !fullName || !role) {
             return new Response(JSON.stringify({ error: 'Preencha todos os campos obrigatorios.' }), {
+                status: 400,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            });
+        }
+
+        // Para professor, unidade e obrigatoria
+        if (role === 'professor' && !unitName) {
+            return new Response(JSON.stringify({ error: 'Selecione uma unidade para o professor.' }), {
                 status: 400,
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             });
@@ -72,12 +80,15 @@ Deno.serve(async (req: Request) => {
             });
         }
 
+        const finalUnit = role === 'admin' ? 'all' : unitName;
+
         // Cria o usuario via Admin API
+        // Passa os metadados corretos para o trigger handle_new_user
         const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
             email,
             password,
             email_confirm: true,
-            user_metadata: { full_name: fullName, unit_name: unitName, role },
+            user_metadata: { full_name: fullName, unit_name: finalUnit, role },
         });
 
         if (createError) {
@@ -86,6 +97,8 @@ Deno.serve(async (req: Request) => {
                 msg = 'Este e-mail ja esta cadastrado.';
             } else if (createError.message.includes('invalid')) {
                 msg = 'E-mail invalido.';
+            } else {
+                msg = createError.message;
             }
             return new Response(JSON.stringify({ error: msg }), {
                 status: 400,
@@ -93,14 +106,23 @@ Deno.serve(async (req: Request) => {
             });
         }
 
-        // Cria/atualiza o perfil do novo usuario (bypass RLS via service role)
-        await adminClient.from('user_profiles').upsert({
+        // Garante que o perfil esta correto (sobrescreve o que o trigger criou)
+        const { error: profileError } = await adminClient.from('user_profiles').upsert({
             id: newUser.user!.id,
             full_name: fullName,
             email,
-            unit_name: role === 'admin' ? 'all' : unitName,
+            unit_name: finalUnit,
             role,
-        });
+        }, { onConflict: 'id' });
+
+        if (profileError) {
+            console.error('Erro ao criar perfil:', profileError);
+            // Usuario foi criado, mas o perfil falhou - retorna sucesso parcial
+            return new Response(
+                JSON.stringify({ success: true, userId: newUser.user!.id, warning: 'Perfil criado parcialmente.' }),
+                { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+        }
 
         return new Response(
             JSON.stringify({ success: true, userId: newUser.user!.id }),
@@ -111,7 +133,7 @@ Deno.serve(async (req: Request) => {
         console.error('Unexpected error:', err);
         return new Response(
             JSON.stringify({ error: err.message || 'Erro interno no servidor.' }),
-            { status: 500, headers: { 'Content-Type': 'application/json' } }
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
     }
 });
