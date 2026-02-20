@@ -71,14 +71,14 @@ const App: React.FC = () => {
       let profile: UserProfile;
       const isOwnerEmail = user.email === 'juniorolivergol@gmail.com';
 
-      if (!profileData || (isOwnerEmail && profileData.role !== 'admin')) {
-        // Corrige/cria o perfil como admin para o dono do sistema
+      if (isOwnerEmail && (!profileData || profileData.role !== 'admin')) {
+        // Corrige/cria o perfil como admin SOMENTE para o dono do sistema
         const corrected: UserProfile = {
           id: user.id,
           full_name: profileData?.full_name || user.user_metadata?.full_name || 'Junior Soares',
           email: user.email || '',
           unit_name: 'all',
-          role: isOwnerEmail ? 'admin' : (user.user_metadata?.role || 'professor'),
+          role: 'admin',
         };
         await supabase.from('user_profiles').upsert({
           id: corrected.id,
@@ -88,8 +88,16 @@ const App: React.FC = () => {
           role: corrected.role,
         });
         profile = corrected;
-      } else {
+      } else if (profileData) {
+        // Usa o perfil existente do banco (professor ou admin)
         profile = profileData;
+      } else {
+        // Usuário sem perfil configurado: desloga com mensagem de erro
+        await supabase.auth.signOut();
+        setUser(null);
+        setDataLoading(false);
+        alert('Seu usuário não possui um perfil configurado. Contate o administrador do sistema.');
+        return;
       }
       setUserProfile(profile);
 
@@ -195,8 +203,8 @@ const App: React.FC = () => {
   const allTabs = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, adminOnly: false },
     { id: 'reports', label: 'Dados e Backup', icon: FileSpreadsheet, adminOnly: true },
-    { id: 'form', label: 'Lançar Pontos', icon: PlusCircle, adminOnly: true },
-    { id: 'withdrawal', label: 'Retirar Pontos', icon: MinusCircle, adminOnly: true },
+    { id: 'form', label: 'Lançar Pontos', icon: PlusCircle, adminOnly: false },
+    { id: 'withdrawal', label: 'Retirar Pontos', icon: MinusCircle, adminOnly: false },
     { id: 'quiz', label: 'Quizz da Lição', icon: BrainCircuit, adminOnly: false },
     { id: 'unitRanking', label: 'Ranking Unidades', icon: BarChart3, adminOnly: false },
     { id: 'ranking', label: 'Ranking Alunos', icon: Trophy, adminOnly: false },
@@ -343,12 +351,12 @@ const App: React.FC = () => {
         {activeTab === 'ranking' && <StudentRanking entries={entries} students={students} />}
         {activeTab === 'champions' && isAdmin && <ChampionsHistory />}
         {activeTab === 'userManager' && isAdmin && <UserManager />}
-        {activeTab === 'form' && isAdmin && (
+        {activeTab === 'form' && (
           <div className="max-w-4xl mx-auto">
             <ScoreForm onAddEntry={handleAddEntry} students={students} onComplete={() => setActiveTab('dashboard')} />
           </div>
         )}
-        {activeTab === 'withdrawal' && isAdmin && (
+        {activeTab === 'withdrawal' && (
           <PointsWithdrawal students={students} entries={entries} onAddEntry={handleAddEntry} />
         )}
         {activeTab === 'query' && <UnitQuery entries={entries} />}
