@@ -423,7 +423,7 @@ export const StudentRanking: React.FC<StudentRankingProps> = ({ entries, student
           <div className="order-1 md:order-2 animate-slide-up" style={{ animationDelay: '0s' }}>
             <div className="bg-blue-950 p-10 rounded-[3rem] shadow-2xl shadow-blue-900/40 border-t-8 border-yellow-500 flex flex-col items-center text-center relative transform md:scale-110 z-10 group hover:-translate-y-3 transition-transform duration-300">
               <div className="absolute -top-5 bg-yellow-500 text-blue-950 px-6 py-1.5 rounded-full text-xs font-black uppercase tracking-widest border-4 border-blue-950 shadow-xl">
-                👑 Campeão Geral
+                👑 Líder
               </div>
               <div className="w-24 h-24 bg-blue-900 rounded-full flex items-center justify-center mb-6 border-4 border-blue-800 shadow-inner group-hover:rotate-12 transition-transform relative">
                 <Crown className="w-12 h-12 text-yellow-500 fill-yellow-500 drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]" />
