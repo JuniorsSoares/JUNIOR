@@ -2,7 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import { LogEntry } from '../types';
 import { UNITS } from '../constants';
-import { Trophy, Medal, Filter, Target, Star, TrendingUp, ArrowUpRight } from 'lucide-react';
+import { Trophy, Medal, Filter, Target, Star, TrendingUp, ArrowUpRight, Printer } from 'lucide-react';
 
 interface UnitRankingProps {
   entries: LogEntry[];
@@ -34,6 +34,17 @@ export const UnitRanking: React.FC<UnitRankingProps> = ({ entries }) => {
     return Math.max(...unitStats.map(u => u.points), 1);
   }, [unitStats]);
 
+  const selectedUnitData = useMemo(() => {
+    return unitStats.find(u => u.name === selectedUnit);
+  }, [unitStats, selectedUnit]);
+
+  const handlePrintUnitReport = () => {
+    const el = document.getElementById('printable-unit-report');
+    if (el) el.style.display = 'block';
+    window.print();
+    setTimeout(() => { if (el) el.style.display = 'none'; }, 500);
+  };
+
   const getMedalColor = (index: number) => {
     if (index === 0) return 'text-yellow-500';
     if (index === 1) return 'text-slate-400';
@@ -42,31 +53,123 @@ export const UnitRanking: React.FC<UnitRankingProps> = ({ entries }) => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Filtro / Seletor de Destaque */}
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-indigo-50 rounded-lg">
-              <Filter className="w-5 h-5 text-indigo-600" />
+    <div className="space-y-6 animate-in fade-in duration-700">
+
+      {/* ===== ESTILOS DE IMPRESSAO ===== */}
+      <style>{`
+        @media print {
+          body * { visibility: hidden !important; }
+          #printable-unit-report,
+          #printable-unit-report * { visibility: visible !important; }
+          #printable-unit-report {
+            position: fixed;
+            left: 0; top: 0;
+            width: 100%;
+            height: 100%;
+            background: white !important;
+            padding: 0 !important;
+            margin: 0 !important;
+          }
+          .no-print { display: none !important; }
+          @page { margin: 0; size: A4 portrait; }
+        }
+      `}</style>
+
+      {/* ===== RELATORIO DA UNIDADE IMPRIMIVEL ===== */}
+      {selectedUnitData && (
+        <div id="printable-unit-report" style={{ display: 'none', background: '#f8fafc', minHeight: '100vh', fontFamily: "'Segoe UI', Roboto, sans-serif" }}>
+          <div style={{ padding: '60px 40px' }}>
+            {/* Header Decorativo */}
+            <div style={{ background: '#0f172a', padding: '40px', borderRadius: '24px', color: 'white', position: 'relative', overflow: 'hidden', marginBottom: '40px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
+              <div style={{ position: 'absolute', top: '-20px', right: '-20px', opacity: 0.1 }}>
+                <Trophy size={200} />
+              </div>
+              <div style={{ position: 'relative', zIndex: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                  <Star fill="#fbbf24" color="#fbbf24" size={24} />
+                  <span style={{ fontSize: '12px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '4px', color: '#818cf8' }}>Aluno Nota 10 &bull; Relatórios</span>
+                </div>
+                <h1 style={{ fontSize: '42px', fontWeight: 900, margin: 0, letterSpacing: '-1px' }}>Relatório da Unidade</h1>
+                <p style={{ fontSize: '18px', color: '#94a3b8', marginTop: '8px', fontWeight: 500 }}>Escola Sabatina Central</p>
+              </div>
             </div>
-            <div>
-              <h3 className="font-bold text-slate-800">Destaque da Unidade</h3>
-              <p className="text-xs text-slate-500">Selecione uma unidade para destacá-la no ranking</p>
+
+            {/* Conteudo Principal */}
+            <div style={{ background: 'white', borderRadius: '32px', padding: '50px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0', textAlign: 'center' }}>
+              <div style={{ width: '100px', height: '100px', background: '#eef2ff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+                <Trophy size={48} color="#4f46e5" />
+              </div>
+
+              <h2 style={{ fontSize: '24px', color: '#64748b', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '8px' }}>Unidade</h2>
+              <div style={{ fontSize: '56px', fontWeight: 950, color: '#0f172a', marginBottom: '40px', letterSpacing: '-2px' }}>{selectedUnitData.name}</div>
+
+              <div style={{ height: '2px', background: 'linear-gradient(90deg, transparent, #e2e8f0, transparent)', marginBottom: '40px' }} />
+
+              <div style={{ fontSize: '28px', color: '#475569', fontWeight: 600, marginBottom: '20px' }}>
+                Sua Unidade tem:
+              </div>
+
+              <div style={{ position: 'relative', display: 'inline-block', marginBottom: '40px' }}>
+                <div style={{ fontSize: '120px', fontWeight: 950, color: '#4f46e5', lineHeight: 0.9, position: 'relative', zIndex: 2 }}>
+                  {selectedUnitData.points.toLocaleString()}
+                </div>
+                <div style={{ position: 'absolute', bottom: '10px', left: '0', width: '100%', height: '20px', background: '#fbbf24', opacity: 0.3, zIndex: 1, borderRadius: 'full' }}></div>
+              </div>
+
+              <div style={{ fontSize: '24px', fontWeight: 900, color: '#64748b', textTransform: 'uppercase', letterSpacing: '4px' }}>PONTOS ACUMULADOS</div>
+            </div>
+
+            {/* Rodapé e Assinatura */}
+            <div style={{ marginTop: '50px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+              <div style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 600 }}>
+                DOCUMENTO OFICIAL GERADO EM<br />
+                <span style={{ color: '#64748b', fontSize: '14px' }}>{new Date().toLocaleDateString('pt-BR')} ÀS {new Date().toLocaleTimeString('pt-BR')}</span>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ width: '200px', borderBottom: '2px solid #e2e8f0', marginBottom: '8px' }}></div>
+                <div style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px' }}>Secretaria / Líder</div>
+              </div>
             </div>
           </div>
-          <div className="relative w-full md:w-72">
-            <select
-              value={selectedUnit}
-              onChange={(e) => setSelectedUnit(e.target.value)}
-              className="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none appearance-none bg-white font-bold text-slate-700"
-            >
-              <option value="all">Ver Todas (Sem destaque)</option>
-              {UNITS.map(u => <option key={u} value={u}>{u}</option>)}
-            </select>
-            <div className="absolute right-3 top-4 pointer-events-none text-slate-400">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+        </div>
+      )}
+      {/* Filtro / Seletor de Destaque */}
+      <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200 no-print">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-indigo-50 rounded-2xl">
+              <Filter className="w-6 h-6 text-indigo-600" />
             </div>
+            <div>
+              <h3 className="font-black text-slate-800 uppercase tracking-tight">Pesquisar Unidade</h3>
+              <p className="text-xs text-slate-500 font-medium">Selecione uma unidade para ver detalhes ou exportar</p>
+            </div>
+          </div>
+
+          <div className="flex flex-col md:flex-row gap-3 items-stretch">
+            <div className="relative w-full md:w-72 group">
+              <select
+                value={selectedUnit}
+                onChange={(e) => setSelectedUnit(e.target.value)}
+                className="w-full p-4 pl-5 border-2 border-slate-100 rounded-2xl focus:border-indigo-500 outline-none appearance-none bg-slate-50 font-black text-slate-700 transition-all cursor-pointer"
+              >
+                <option value="all">Ver Todas (Sem destaque)</option>
+                {UNITS.map(u => <option key={u} value={u}>{u}</option>)}
+              </select>
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                <ArrowUpRight className="w-5 h-5 rotate-45" />
+              </div>
+            </div>
+
+            {selectedUnit !== 'all' && (
+              <button
+                onClick={handlePrintUnitReport}
+                className="flex items-center justify-center gap-2 px-6 py-4 bg-blue-950 hover:bg-slate-900 text-white font-black rounded-2xl transition-all shadow-lg active:scale-95"
+              >
+                <Printer className="w-5 h-5" />
+                <span>Salvar em PDF</span>
+              </button>
+            )}
           </div>
         </div>
       </div>
