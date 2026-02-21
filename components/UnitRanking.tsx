@@ -21,8 +21,8 @@ export const UnitRanking: React.FC<UnitRankingProps> = ({ entries }) => {
     return UNITS.map(unit => {
       const unitEntries = entries.filter(e => e.unitName === unit);
       const points = unitEntries.reduce((sum, e) => sum + e.points, 0);
-      return { 
-        name: unit, 
+      return {
+        name: unit,
         points,
         entriesCount: unitEntries.length
       };
@@ -55,7 +55,7 @@ export const UnitRanking: React.FC<UnitRankingProps> = ({ entries }) => {
             </div>
           </div>
           <div className="relative w-full md:w-72">
-            <select 
+            <select
               value={selectedUnit}
               onChange={(e) => setSelectedUnit(e.target.value)}
               className="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none appearance-none bg-white font-bold text-slate-700"
@@ -92,7 +92,7 @@ export const UnitRanking: React.FC<UnitRankingProps> = ({ entries }) => {
             </div>
             <h4 className="font-black text-white text-2xl mb-1">{unitStats[0].name}</h4>
             <div className="text-4xl font-black text-white mb-3">{unitStats[0].points.toLocaleString()}</div>
-            <div className="text-xs font-black bg-yellow-400 text-indigo-900 px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg">CAMPEÃ ATUAL</div>
+            <div className="text-xs font-black bg-yellow-400 text-indigo-900 px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg">LÍDER</div>
           </div>
         )}
 
@@ -117,8 +117,8 @@ export const UnitRanking: React.FC<UnitRankingProps> = ({ entries }) => {
             Classificação das Unidades
           </h3>
           <div className="flex items-center gap-2">
-             <TrendingUp className="w-4 h-4 text-emerald-500" />
-             <span className="text-[10px] font-bold text-slate-500 uppercase">Tempo Real</span>
+            <TrendingUp className="w-4 h-4 text-emerald-500" />
+            <span className="text-[10px] font-bold text-slate-500 uppercase">Tempo Real</span>
           </div>
         </div>
 
@@ -126,8 +126,8 @@ export const UnitRanking: React.FC<UnitRankingProps> = ({ entries }) => {
           {unitStats.map((unit, index) => {
             const isHighlighted = unit.name === selectedUnit;
             return (
-              <div 
-                key={unit.name} 
+              <div
+                key={unit.name}
                 className={`p-5 flex items-center gap-6 transition-all ${isHighlighted ? 'bg-indigo-50/50 ring-2 ring-inset ring-indigo-500/20' : 'hover:bg-slate-50'}`}
               >
                 <div className="w-10 text-center shrink-0">
@@ -135,7 +135,7 @@ export const UnitRanking: React.FC<UnitRankingProps> = ({ entries }) => {
                     {index + 1}º
                   </span>
                 </div>
-                
+
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
@@ -153,10 +153,10 @@ export const UnitRanking: React.FC<UnitRankingProps> = ({ entries }) => {
                       <div className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">PONTOS</div>
                     </div>
                   </div>
-                  
+
                   {/* Barra de Progresso */}
                   <div className="relative w-full h-3 bg-slate-100 rounded-full overflow-hidden">
-                    <div 
+                    <div
                       className={`absolute left-0 top-0 h-full transition-all duration-1000 ease-out rounded-full ${isHighlighted ? 'bg-indigo-500 shadow-[0_0_10px_rgba(79,70,229,0.3)]' : 'bg-slate-400'}`}
                       style={{ width: `${(unit.points / maxPoints) * 100}%` }}
                     />
