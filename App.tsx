@@ -103,7 +103,7 @@ const App: React.FC = () => {
     loadAll();
   }, [user]);
 
-  const isAdmin = userProfile?.role === 'admin' || user.email === 'juniorolivergol@gmail.com';
+  const isAdmin = userProfile?.role === 'admin' || user?.email === 'juniorolivergol@gmail.com';
 
   const handleSignOut = async () => { await supabase.auth.signOut(); };
 
@@ -211,7 +211,7 @@ const App: React.FC = () => {
     );
   }
 
-  const displayName = userProfile?.full_name || user.email?.split('@')[0] || 'Usuário';
+  const displayName = userProfile?.full_name || user?.email?.split('@')[0] || 'Usuário';
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-slate-50">
