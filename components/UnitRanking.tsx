@@ -2,7 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import { LogEntry } from '../types';
 import { UNITS } from '../constants';
-import { Trophy, Medal, Filter, Target, Star, TrendingUp } from 'lucide-react';
+import { Trophy, Medal, Filter, Target, Star, TrendingUp, ArrowUpRight } from 'lucide-react';
 
 interface UnitRankingProps {
   entries: LogEntry[];
@@ -16,6 +16,7 @@ interface RankedUnit {
 
 export const UnitRanking: React.FC<UnitRankingProps> = ({ entries }) => {
   const [selectedUnit, setSelectedUnit] = useState<string>('all');
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   const unitStats = useMemo(() => {
     return UNITS.map(unit => {
@@ -74,7 +75,7 @@ export const UnitRanking: React.FC<UnitRankingProps> = ({ entries }) => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end py-4">
         {/* Segundo Lugar */}
         {unitStats[1] && (
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center text-center order-2 md:order-1 transform transition-all hover:-translate-y-1">
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center text-center order-2 md:order-1 transform transition-all hover:-translate-y-2 duration-300">
             <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mb-4 border-2 border-slate-100">
               <Medal className="w-6 h-6 text-slate-400" />
             </div>
@@ -86,7 +87,7 @@ export const UnitRanking: React.FC<UnitRankingProps> = ({ entries }) => {
 
         {/* Primeiro Lugar */}
         {unitStats[0] && (
-          <div className="bg-gradient-to-b from-indigo-600 to-indigo-700 p-8 rounded-3xl shadow-xl flex flex-col items-center text-center order-1 md:order-2 transform scale-105 border-4 border-white">
+          <div className="bg-gradient-to-b from-indigo-600 to-indigo-700 p-8 rounded-3xl shadow-xl flex flex-col items-center text-center order-1 md:order-2 transform scale-105 border-4 border-white hover:-translate-y-3 transition-transform duration-300">
             <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mb-4 backdrop-blur-sm border-2 border-white/30">
               <Trophy className="w-8 h-8 text-yellow-400 drop-shadow-md" />
             </div>
@@ -98,7 +99,7 @@ export const UnitRanking: React.FC<UnitRankingProps> = ({ entries }) => {
 
         {/* Terceiro Lugar */}
         {unitStats[2] && (
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center text-center order-3 transform transition-all hover:-translate-y-1">
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center text-center order-3 transform transition-all hover:-translate-y-2 duration-300">
             <div className="w-12 h-12 bg-amber-50 rounded-full flex items-center justify-center mb-4 border-2 border-amber-100">
               <Medal className="w-6 h-6 text-amber-600" />
             </div>
@@ -110,10 +111,10 @@ export const UnitRanking: React.FC<UnitRankingProps> = ({ entries }) => {
       </div>
 
       {/* Tabela Completa */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+      <div className="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
+        <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
           <h3 className="font-black text-slate-800 flex items-center gap-2 uppercase tracking-tight">
-            <Star className="w-5 h-5 text-indigo-600" />
+            <Star className="w-6 h-6 text-indigo-600 fill-indigo-600" />
             Classificação das Unidades
           </h3>
           <div className="flex items-center gap-2">
@@ -125,12 +126,15 @@ export const UnitRanking: React.FC<UnitRankingProps> = ({ entries }) => {
         <div className="divide-y divide-slate-100">
           {unitStats.map((unit, index) => {
             const isHighlighted = unit.name === selectedUnit;
+            const isHovered = hoveredId === unit.name;
             return (
               <div
                 key={unit.name}
-                className={`p-5 flex items-center gap-6 transition-all ${isHighlighted ? 'bg-indigo-50/50 ring-2 ring-inset ring-indigo-500/20' : 'hover:bg-slate-50'}`}
+                onMouseEnter={() => setHoveredId(unit.name)}
+                onMouseLeave={() => setHoveredId(null)}
+                className={`group p-6 flex items-center gap-6 transition-all duration-300 ${isHovered ? 'bg-indigo-50/50 translate-x-2' : isHighlighted ? 'bg-indigo-50/30' : 'hover:bg-slate-50'}`}
               >
-                <div className="w-10 text-center shrink-0">
+                <div className="w-12 text-center shrink-0">
                   <span className={`text-xl font-black ${index < 3 ? 'text-indigo-600' : 'text-slate-300'}`}>
                     {index + 1}º
                   </span>
@@ -139,25 +143,30 @@ export const UnitRanking: React.FC<UnitRankingProps> = ({ entries }) => {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
-                      <h4 className={`text-lg font-bold transition-colors ${isHighlighted ? 'text-indigo-700' : 'text-slate-800'}`}>
+                      <h4 className={`text-lg font-black transition-colors ${isHighlighted || isHovered ? 'text-indigo-700' : 'text-slate-800'}`}>
                         {unit.name}
                       </h4>
                       {isHighlighted && (
-                        <span className="px-2 py-0.5 bg-indigo-600 text-white text-[9px] font-black rounded uppercase tracking-tighter">Sua Unidade</span>
+                        <span className="px-2 py-0.5 bg-indigo-600 text-white text-[9px] font-black rounded uppercase tracking-tighter shadow-sm">Destaque</span>
                       )}
                     </div>
-                    <div className="text-right">
-                      <div className={`text-2xl font-black ${isHighlighted ? 'text-indigo-600' : 'text-slate-800'}`}>
-                        {unit.points.toLocaleString()}
+                    <div className="text-right flex items-center gap-6">
+                      <div className="text-right">
+                        <div className={`text-2xl font-black ${isHighlighted || isHovered ? 'text-indigo-600' : 'text-slate-800'}`}>
+                          {unit.points.toLocaleString()}
+                        </div>
+                        <div className="text-[9px] text-slate-400 font-black uppercase tracking-widest">PONTOS</div>
                       </div>
-                      <div className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">PONTOS</div>
+                      <div className={`p-3 rounded-xl transition-all duration-300 ${isHovered ? 'bg-indigo-600 text-white scale-110' : 'bg-slate-100 text-slate-300'}`}>
+                        <ArrowUpRight className="w-5 h-5" />
+                      </div>
                     </div>
                   </div>
 
                   {/* Barra de Progresso */}
                   <div className="relative w-full h-3 bg-slate-100 rounded-full overflow-hidden">
                     <div
-                      className={`absolute left-0 top-0 h-full transition-all duration-1000 ease-out rounded-full ${isHighlighted ? 'bg-indigo-500 shadow-[0_0_10px_rgba(79,70,229,0.3)]' : 'bg-slate-400'}`}
+                      className={`absolute left-0 top-0 h-full transition-all duration-1000 ease-out rounded-full ${isHighlighted || isHovered ? 'bg-indigo-500 shadow-[0_0_10px_rgba(79,70,229,0.3)]' : 'bg-slate-400'}`}
                       style={{ width: `${(unit.points / maxPoints) * 100}%` }}
                     />
                   </div>
