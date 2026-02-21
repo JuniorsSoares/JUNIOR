@@ -23,7 +23,8 @@ export const UNITS = [
   'Soldados de Jesus',
   'Maranata',
   'Luz Celeste',
-  'Jovens'
+  'Jovens',
+  'UNIDADE 5'
 ];
 
 export const ROLES = [
