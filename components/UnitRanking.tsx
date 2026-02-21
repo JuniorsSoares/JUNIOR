@@ -56,9 +56,11 @@ export const UnitRanking: React.FC<UnitRankingProps> = ({ entries }) => {
     <div className="space-y-6 animate-in fade-in duration-700">
 
       {/* ===== ESTILOS DE IMPRESSAO ===== */}
+      {/* ===== ESTILOS DE IMPRESSAO ===== */}
       <style>{`
         @media print {
           body * { visibility: hidden !important; }
+          
           #printable-unit-report,
           #printable-unit-report * { visibility: visible !important; }
           #printable-unit-report {
@@ -70,10 +72,118 @@ export const UnitRanking: React.FC<UnitRankingProps> = ({ entries }) => {
             padding: 0 !important;
             margin: 0 !important;
           }
+
+          #printable-ranking,
+          #printable-ranking * { visibility: visible !important; }
+          #printable-ranking {
+            position: fixed;
+            left: 0; top: 0;
+            width: 100%;
+            background: white !important;
+            color: black !important;
+          }
+
           .no-print { display: none !important; }
-          @page { margin: 0; size: A4 portrait; }
+          @page { margin: 1cm; size: A4 portrait; }
         }
       `}</style>
+
+      {/* ===== RANKING DE UNIDADES IMPRIMIVEL (oculto na tela, visivel ao imprimir) ===== */}
+      <div id="printable-ranking" style={{ display: 'none', fontFamily: "'Georgia', serif" }}>
+        {/* Cabecalho azul escuro */}
+        <div style={{ background: '#0f172a', color: 'white', padding: '20px 28px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div>
+              <div style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase', color: '#818cf8', marginBottom: '5px' }}>
+                Sistema Aluno Nota 10
+              </div>
+              <div style={{ fontSize: '22px', fontWeight: 900, color: '#ffffff', letterSpacing: '0.5px', margin: 0 }}>
+                Ranking Geral de Unidades
+              </div>
+              <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '4px' }}>
+                Escola Sabatina Central &bull; Total de Pontos
+              </div>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: '9px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px' }}>Gerado em</div>
+              <div style={{ fontSize: '15px', fontWeight: 700, color: '#c7d2fe' }}>{new Date().toLocaleDateString('pt-BR')}</div>
+              <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>{unitStats.length} unidades</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Faixa dourada decorativa */}
+        <div style={{ height: '5px', background: 'linear-gradient(90deg, #b45309, #f59e0b, #fbbf24, #f59e0b, #b45309)', marginBottom: '20px' }} />
+
+        {/* Destaque Top 3 */}
+        {unitStats.length >= 3 && (
+          <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', padding: '0 4px' }}>
+            {([1, 0, 2] as number[]).map((pos) => (
+              <div key={pos} style={{
+                flex: 1,
+                background: pos === 0 ? '#0f172a' : '#f8fafc',
+                border: pos === 0 ? '2px solid #f59e0b' : '1px solid #e2e8f0',
+                borderRadius: '10px',
+                padding: '14px 10px',
+                textAlign: 'center',
+              }}>
+                <div style={{ fontSize: '24px', marginBottom: '5px' }}>
+                  {pos === 0 ? '🥇' : pos === 1 ? '🥈' : '🥉'}
+                </div>
+                <div style={{ fontSize: '13px', fontWeight: 900, color: pos === 0 ? '#ffffff' : '#0f172a', marginBottom: '3px' }}>
+                  {unitStats[pos].name}
+                </div>
+                <div style={{ fontSize: '20px', fontWeight: 900, color: pos === 0 ? '#fbbf24' : '#1e40af' }}>
+                  {unitStats[pos].points.toLocaleString()}
+                </div>
+                <div style={{ fontSize: '9px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>pts</div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Tabela completa */}
+        <div style={{ fontSize: '9px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '8px', padding: '0 4px' }}>
+          Classificacao Completa das Unidades
+        </div>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
+          <thead>
+            <tr style={{ background: '#f1f5f9' }}>
+              <th style={{ padding: '8px 10px', textAlign: 'center', width: '40px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', fontSize: '9px', letterSpacing: '1px', borderBottom: '2px solid #e2e8f0' }}>Pos.</th>
+              <th style={{ padding: '8px 10px', textAlign: 'left', fontWeight: 800, color: '#475569', textTransform: 'uppercase', fontSize: '9px', letterSpacing: '1px', borderBottom: '2px solid #e2e8f0' }}>Unidade</th>
+              <th style={{ padding: '8px 10px', textAlign: 'center', fontWeight: 800, color: '#475569', textTransform: 'uppercase', fontSize: '9px', letterSpacing: '1px', borderBottom: '2px solid #e2e8f0' }}>Atividades</th>
+              <th style={{ padding: '8px 10px', textAlign: 'right', fontWeight: 800, color: '#475569', textTransform: 'uppercase', fontSize: '9px', letterSpacing: '1px', borderBottom: '2px solid #e2e8f0' }}>Pontos</th>
+            </tr>
+          </thead>
+          <tbody>
+            {unitStats.map((unit, index) => (
+              <tr key={unit.name} style={{
+                background: index % 2 === 0 ? '#ffffff' : '#f8fafc',
+                borderBottom: '1px solid #f1f5f9'
+              }}>
+                <td style={{ padding: '7px 10px', fontWeight: 900, textAlign: 'center', color: index < 3 ? '#0f172a' : '#cbd5e1', fontSize: index < 3 ? '13px' : '11px' }}>
+                  {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}°`}
+                </td>
+                <td style={{ padding: '7px 10px', fontWeight: index < 3 ? 800 : 600, color: '#0f172a' }}>{unit.name}</td>
+                <td style={{ padding: '7px 10px', textAlign: 'center', color: '#475569' }}>{unit.entriesCount}</td>
+                <td style={{ padding: '7px 10px', fontWeight: 900, textAlign: 'right', color: index < 3 ? '#1e3a5f' : '#1e40af', fontSize: '13px' }}>
+                  {unit.points.toLocaleString()}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {/* Rodape */}
+        <div style={{ marginTop: '24px', borderTop: '2px solid #e2e8f0', paddingTop: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ fontSize: '9px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>
+            Sistema Aluno Nota 10 — Ranking de Unidades
+          </div>
+          <div style={{ fontSize: '9px', color: '#94a3b8' }}>
+            {unitStats.length} unidades &bull; {new Date().toLocaleString('pt-BR')}
+          </div>
+        </div>
+      </div>
 
       {/* ===== RELATORIO DA UNIDADE IMPRIMIVEL ===== */}
       {selectedUnitData && (
@@ -164,12 +274,25 @@ export const UnitRanking: React.FC<UnitRankingProps> = ({ entries }) => {
             {selectedUnit !== 'all' && (
               <button
                 onClick={handlePrintUnitReport}
-                className="flex items-center justify-center gap-2 px-6 py-4 bg-blue-950 hover:bg-slate-900 text-white font-black rounded-2xl transition-all shadow-lg active:scale-95"
+                className="flex items-center justify-center gap-2 px-6 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-2xl transition-all shadow-lg active:scale-95"
               >
                 <Printer className="w-5 h-5" />
-                <span>Salvar em PDF</span>
+                <span>Salvar PDF Unidade</span>
               </button>
             )}
+
+            <button
+              onClick={() => {
+                const el = document.getElementById('printable-ranking');
+                if (el) el.style.display = 'block';
+                window.print();
+                setTimeout(() => { if (el) el.style.display = 'none'; }, 500);
+              }}
+              className="flex items-center justify-center gap-2 px-6 py-4 bg-blue-950 hover:bg-slate-900 text-white font-black rounded-2xl transition-all shadow-lg active:scale-95"
+            >
+              <Printer className="w-5 h-5" />
+              <span>Imprimir Ranking</span>
+            </button>
           </div>
         </div>
       </div>
