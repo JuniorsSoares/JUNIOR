@@ -70,17 +70,9 @@ const App: React.FC = () => {
         setUserProfile(profileData);
       }
 
-      // Carrega dados iniciais
-      const isAdmin = profileData?.role === 'admin';
-      const unitFilter = profileData?.unit_name;
-
-      const studentsQuery = isAdmin || !unitFilter
-        ? supabase.from('students').select('*').order('name')
-        : supabase.from('students').select('*').eq('unit_name', unitFilter).order('name');
-
-      const entriesQuery = isAdmin || !unitFilter
-        ? supabase.from('log_entries').select('*').order('date', { ascending: false })
-        : supabase.from('log_entries').select('*').eq('unit_name', unitFilter).order('date', { ascending: false });
+      // Carrega dados iniciais - ACESSO TOTAL PARA TODOS LOGADOS
+      const studentsQuery = supabase.from('students').select('*').order('name');
+      const entriesQuery = supabase.from('log_entries').select('*').order('date', { ascending: false });
 
       const [studentsRes, entriesRes] = await Promise.all([studentsQuery, entriesQuery]);
 
@@ -103,7 +95,7 @@ const App: React.FC = () => {
     loadAll();
   }, [user]);
 
-  const isAdmin = userProfile?.role === 'admin' || user?.email === 'juniorolivergol@gmail.com';
+  const isAdmin = !!user;
 
   const handleSignOut = async () => { await supabase.auth.signOut(); };
 
@@ -233,18 +225,15 @@ const App: React.FC = () => {
         {/* Perfil do usuário logado */}
         <div className="mx-3 mt-4 bg-slate-800/60 rounded-xl p-3 border border-slate-700/50">
           <div className="flex items-center gap-2">
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${isAdmin ? 'bg-indigo-600' : 'bg-sky-700'}`}>
-              {isAdmin ? <Crown className="w-4 h-4 text-yellow-400" /> : <Shield className="w-4 h-4 text-sky-200" />}
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 bg-indigo-600">
+              <Crown className="w-4 h-4 text-yellow-400" />
             </div>
             <div className="min-w-0">
               <p className="text-xs font-bold text-white truncate">{displayName}</p>
               <div className="flex items-center gap-1 mt-0.5">
-                <span className={`text-[9px] font-black uppercase tracking-widest ${isAdmin ? 'text-indigo-400' : 'text-sky-400'}`}>
-                  {isAdmin ? 'Administrador' : 'Professor'}
+                <span className="text-[9px] font-black uppercase tracking-widest text-indigo-400">
+                  Administrador
                 </span>
-                {!isAdmin && userProfile?.unit_name && (
-                  <span className="text-[9px] text-slate-500">• {userProfile.unit_name}</span>
-                )}
               </div>
             </div>
           </div>
@@ -270,16 +259,6 @@ const App: React.FC = () => {
 
         {/* Rodapé sidebar */}
         <div className="p-3 space-y-2 border-t border-slate-800">
-          {/* Badge professor: unidade */}
-          {!isAdmin && userProfile && (
-            <div className="bg-sky-900/30 border border-sky-800/40 rounded-xl p-2.5 flex items-center gap-2">
-              <MapPin className="w-3.5 h-3.5 text-sky-400 shrink-0" />
-              <div>
-                <p className="text-[9px] text-sky-500 font-bold uppercase tracking-wide">Sua Unidade</p>
-                <p className="text-xs text-sky-200 font-bold">{userProfile.unit_name}</p>
-              </div>
-            </div>
-          )}
           {/* Supabase badge */}
           <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-2.5 flex items-center gap-2">
             <Cloud className="w-3 h-3 text-green-400" />
@@ -304,7 +283,7 @@ const App: React.FC = () => {
               {visibleTabs.find(t => t.id === activeTab)?.label || 'Dashboard'}
             </h2>
             <p className="text-slate-500 text-sm">
-              {isAdmin ? 'Acesso Total • Todas as Unidades' : `Unidade: ${userProfile?.unit_name}`}
+              Acesso Administrativo Completo
             </p>
           </div>
           <div className="bg-white px-4 py-2 rounded-lg shadow-sm border border-slate-200 flex items-center gap-2">
