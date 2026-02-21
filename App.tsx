@@ -31,111 +31,55 @@ interface UserProfile {
 }
 
 const App: React.FC = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [authLoading, setAuthLoading] = useState(true);
-
+  const [user, setUser] = useState<User | null>({ id: 'public-user', email: 'public@access.com' } as any);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>({
+    id: 'public-user',
+    full_name: 'Usuário Público',
+    email: 'public@access.com',
+    unit_name: 'all',
+    role: 'admin',
+  });
+  const [authLoading, setAuthLoading] = useState(false);
   const [entries, setEntries] = useState<LogEntry[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [dataLoading, setDataLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('dashboard');
 
-  // Escuta mudanças de sessão
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setAuthLoading(false);
-    });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      if (!session) { setUserProfile(null); setEntries([]); setStudents([]); }
-    });
-    return () => subscription.unsubscribe();
-  }, []);
+  const isAdmin = true;
 
-  // Carrega perfil e dados quando usuário loga
+  // Carrega dados iniciais assim que o componente monta
   useEffect(() => {
-    if (!user) return;
-
-    const loadAll = async () => {
+    const loadAllData = async () => {
       setDataLoading(true);
+      try {
+        const { data: studentsData } = await supabase.from('students').select('*').order('name');
+        const { data: entriesData } = await supabase.from('log_entries').select('*').order('date', { ascending: false });
 
-      // Perfil do usuário
-      const { data: profileData } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-
-      // Se não tiver perfil ou estiver errado, faz upsert no banco
-      let profile: UserProfile;
-      const isOwnerEmail = user.email === 'juniorolivergol@gmail.com';
-
-      if (isOwnerEmail && (!profileData || profileData.role !== 'admin')) {
-        // Corrige/cria o perfil como admin SOMENTE para o dono do sistema
-        const corrected: UserProfile = {
-          id: user.id,
-          full_name: profileData?.full_name || user.user_metadata?.full_name || 'Junior Soares',
-          email: user.email || '',
-          unit_name: 'all',
-          role: 'admin',
-        };
-        await supabase.from('user_profiles').upsert({
-          id: corrected.id,
-          full_name: corrected.full_name,
-          email: corrected.email,
-          unit_name: corrected.unit_name,
-          role: corrected.role,
-        });
-        profile = corrected;
-      } else if (profileData) {
-        // Usa o perfil existente do banco (professor ou admin)
-        profile = profileData;
-      } else {
-        // Usuário sem perfil configurado: desloga com mensagem de erro
-        await supabase.auth.signOut();
-        setUser(null);
+        if (studentsData) {
+          setStudents(studentsData.map((s: any) => ({
+            id: s.id, name: s.name, unitName: s.unit_name, role: s.role,
+          })));
+        }
+        if (entriesData) {
+          setEntries(entriesData.map((e: any) => ({
+            id: e.id, date: e.date, activityId: e.activity_id,
+            points: e.points, quantity: e.quantity, unitName: e.unit_name,
+            studentName: e.student_name, studentId: e.student_id, notes: e.notes,
+          })));
+        }
+      } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+      } finally {
         setDataLoading(false);
-        alert('Seu usuário não possui um perfil configurado. Contate o administrador do sistema.');
-        return;
       }
-      setUserProfile(profile);
-
-      // Filtra por unidade se for professor
-      const isAdmin = profile.role === 'admin';
-
-      const studentsQuery = isAdmin
-        ? supabase.from('students').select('*').order('name')
-        : supabase.from('students').select('*').eq('unit_name', profile.unit_name).order('name');
-
-      const entriesQuery = isAdmin
-        ? supabase.from('log_entries').select('*').order('date', { ascending: false })
-        : supabase.from('log_entries').select('*').eq('unit_name', profile.unit_name).order('date', { ascending: false });
-
-      const [studentsRes, entriesRes] = await Promise.all([studentsQuery, entriesQuery]);
-
-      if (studentsRes.data) {
-        setStudents(studentsRes.data.map((s: any) => ({
-          id: s.id, name: s.name, unitName: s.unit_name, role: s.role,
-        })));
-      }
-      if (entriesRes.data) {
-        setEntries(entriesRes.data.map((e: any) => ({
-          id: e.id, date: e.date, activityId: e.activity_id,
-          points: e.points, quantity: e.quantity, unitName: e.unit_name,
-          studentName: e.student_name, studentId: e.student_id, notes: e.notes,
-        })));
-      }
-
-      setDataLoading(false);
     };
 
-    loadAll();
-  }, [user]);
+    loadAllData();
+  }, []);
 
-  const isAdmin = userProfile?.role === 'admin';
-
-  const handleSignOut = async () => { await supabase.auth.signOut(); };
+  const handleSignOut = async () => {
+    alert('Acesso público liberado. Não é necessário deslogar.');
+  };
 
   const handleAddEntry = useCallback(async (entry: LogEntry) => {
     const { error } = await supabase.from('log_entries').insert({
@@ -229,7 +173,7 @@ const App: React.FC = () => {
     );
   }
 
-  if (!user) return <AuthScreen />;
+  // if (!user) return <AuthScreen />;
 
   if (dataLoading) {
     return (
