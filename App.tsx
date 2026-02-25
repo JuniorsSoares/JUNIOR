@@ -42,9 +42,8 @@ const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('dashboard');
 
   const PLALIST_URLS = [
-    'https://www.youtube.com/watch?v=7Zi3LI03uvo',
-    'https://www.youtube.com/watch?v=bro5BvhbP9w',
-    'https://www.youtube.com/watch?v=HbAwV7GBjIM'
+    '/audio/musica1.mp3',
+    '/audio/musica2.mp3'
   ];
 
   // Escuta mudanças de sessão
