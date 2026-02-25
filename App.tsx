@@ -13,6 +13,7 @@ import { Reports } from './components/Reports';
 import { PointsWithdrawal } from './components/PointsWithdrawal';
 import { AuthScreen } from './components/AuthScreen';
 import { UserManager } from './components/UserManager';
+import { AudioPlayer } from './components/AudioPlayer';
 import { ACTIVITIES } from './constants';
 import { supabase } from './supabaseClient';
 import type { User } from '@supabase/supabase-js';
@@ -39,6 +40,12 @@ const App: React.FC = () => {
   const [students, setStudents] = useState<Student[]>([]);
   const [dataLoading, setDataLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('dashboard');
+
+  const PLALIST_URLS = [
+    'https://www.youtube.com/watch?v=7Zi3LI03uvo',
+    'https://www.youtube.com/watch?v=bro5BvhbP9w',
+    'https://www.youtube.com/watch?v=HbAwV7GBjIM'
+  ];
 
   // Escuta mudanças de sessão
   useEffect(() => {
@@ -356,6 +363,9 @@ const App: React.FC = () => {
           </div>
         )}
       </main>
+
+      {/* ===== AUDIO PLAYER ===== */}
+      <AudioPlayer playlist={PLALIST_URLS} />
     </div>
   );
 };
