@@ -2,7 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import { LogEntry } from '../types';
 import { UNITS } from '../constants';
-import { Trophy, Medal, Filter, Target, Star, TrendingUp, ArrowUpRight, Printer } from 'lucide-react';
+import { Trophy, Medal, Filter, Target, Star, TrendingUp, ArrowUpRight, Printer, X, History, FileText } from 'lucide-react';
 
 interface UnitRankingProps {
   entries: LogEntry[];
@@ -17,6 +17,7 @@ interface RankedUnit {
 export const UnitRanking: React.FC<UnitRankingProps> = ({ entries }) => {
   const [selectedUnit, setSelectedUnit] = useState<string>('all');
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [viewingUnit, setViewingUnit] = useState<string | null>(null);
 
   const unitStats = useMemo(() => {
     return UNITS.map(unit => {
@@ -50,6 +51,19 @@ export const UnitRanking: React.FC<UnitRankingProps> = ({ entries }) => {
     if (index === 1) return 'text-slate-400';
     if (index === 2) return 'text-amber-600';
     return 'text-slate-200';
+  };
+
+  const unitHistoryEntries = useMemo(() => {
+    if (!viewingUnit) return [];
+    return entries
+      .filter(e => e.unitName === viewingUnit)
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [entries, viewingUnit]);
+
+  const getActivityLabel = (id: string) => {
+    if (id === 'redemption') return 'Resgate de Brinde';
+    if (id === 'withdrawal') return 'Retirada de Pontos (Ajuste)';
+    return 'Atividade'; // Simplificado, idealmente viria das constantes se disponível aqui
   };
 
   return (
@@ -243,6 +257,84 @@ export const UnitRanking: React.FC<UnitRankingProps> = ({ entries }) => {
           </div>
         </div>
       )}
+
+      {/* ===== MODAL DE ATIVIDADES DA UNIDADE ===== */}
+      {viewingUnit && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in duration-300 flex flex-col max-h-[90vh]">
+            
+            {/* Header do modal */}
+            <div className="bg-indigo-950 p-6 text-white flex justify-between items-center shrink-0">
+              <div className="flex items-center gap-2">
+                <History className="w-6 h-6 text-indigo-400" />
+                <h3 className="font-bold text-lg">Atividades: {viewingUnit}</h3>
+              </div>
+              <button 
+                onClick={() => setViewingUnit(null)} 
+                className="p-2 hover:bg-white/10 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Conteudo do modal */}
+            <div className="overflow-y-auto bg-white flex-1 p-6">
+              <div className="mb-6 flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Resumo da Unidade</p>
+                  <h4 className="text-2xl font-black text-slate-800">{viewingUnit}</h4>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Total de Pontos</p>
+                  <p className="text-3xl font-black text-indigo-600">
+                    {unitStats.find(u => u.name === viewingUnit)?.points.toLocaleString()}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h5 className="font-bold text-slate-700 flex items-center gap-2 border-b border-slate-100 pb-2">
+                  <FileText className="w-4 h-4 text-indigo-500" />
+                  Últimos Lançamentos
+                </h5>
+                
+                {unitHistoryEntries.length === 0 ? (
+                  <div className="py-10 text-center bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
+                    <p className="text-slate-400 font-bold">Nenhuma atividade registrada.</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-slate-50">
+                    {unitHistoryEntries.map((entry) => (
+                      <div key={entry.id} className="py-4 flex items-center justify-between group">
+                        <div>
+                          <p className="font-black text-slate-800 leading-tight">{entry.studentName}</p>
+                          <p className="text-xs text-slate-500 font-medium">
+                            {new Date(entry.date).toLocaleDateString('pt-BR')} &bull; {getActivityLabel(entry.activityId)}
+                          </p>
+                        </div>
+                        <div className={`font-black text-lg ${entry.points < 0 ? 'text-red-500' : 'text-indigo-600'}`}>
+                          {entry.points > 0 ? `+${entry.points}` : entry.points}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Rodape do modal */}
+            <div className="p-6 bg-slate-50 border-t border-slate-100 flex gap-3">
+              <button
+                onClick={() => setViewingUnit(null)}
+                className="flex-1 bg-white border border-slate-200 text-slate-600 font-bold py-4 rounded-2xl hover:bg-slate-100 transition-all shadow-sm"
+              >
+                Voltar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Filtro / Seletor de Destaque */}
       <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-200 no-print">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -358,7 +450,8 @@ export const UnitRanking: React.FC<UnitRankingProps> = ({ entries }) => {
                 key={unit.name}
                 onMouseEnter={() => setHoveredId(unit.name)}
                 onMouseLeave={() => setHoveredId(null)}
-                className={`group p-6 flex items-center gap-6 transition-all duration-300 ${isHovered ? 'bg-indigo-50/50 translate-x-2' : isHighlighted ? 'bg-indigo-50/30' : 'hover:bg-slate-50'}`}
+                onClick={() => setViewingUnit(unit.name)}
+                className={`group p-6 flex items-center gap-6 transition-all duration-300 cursor-pointer ${isHovered ? 'bg-indigo-50/50 translate-x-2' : isHighlighted ? 'bg-indigo-50/30' : 'hover:bg-slate-50'}`}
               >
                 <div className="w-12 text-center shrink-0">
                   <span className={`text-xl font-black ${index < 3 ? 'text-indigo-600' : 'text-slate-300'}`}>
