@@ -3,7 +3,7 @@ import React, { useState, useMemo } from 'react';
 import { LogEntry } from '../types';
 import { UNITS } from '../constants';
 import { Trophy, Medal, Filter, Target, Star, TrendingUp, ArrowUpRight, Printer, X, History, FileText } from 'lucide-react';
-
+import { AnimatedNumber } from './AnimatedNumber';
 interface UnitRankingProps {
   entries: LogEntry[];
 }
@@ -287,7 +287,7 @@ export const UnitRanking: React.FC<UnitRankingProps> = ({ entries }) => {
                 <div className="text-right">
                   <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Total de Pontos</p>
                   <p className="text-3xl font-black text-indigo-600">
-                    {unitStats.find(u => u.name === viewingUnit)?.points.toLocaleString()}
+                    <AnimatedNumber value={unitStats.find(u => u.name === viewingUnit)?.points || 0} />
                   </p>
                 </div>
               </div>
@@ -398,7 +398,7 @@ export const UnitRanking: React.FC<UnitRankingProps> = ({ entries }) => {
               <Medal className="w-6 h-6 text-slate-400" />
             </div>
             <h4 className="font-bold text-slate-700 text-lg mb-1">{unitStats[1].name}</h4>
-            <div className="text-2xl font-black text-slate-800 mb-2">{unitStats[1].points.toLocaleString()}</div>
+            <div className="text-2xl font-black text-slate-800 mb-2"><AnimatedNumber value={unitStats[1].points} /></div>
             <div className="text-[10px] font-bold bg-slate-100 text-slate-500 px-3 py-1 rounded-full uppercase tracking-widest">2º LUGAR</div>
           </div>
         )}
@@ -410,7 +410,7 @@ export const UnitRanking: React.FC<UnitRankingProps> = ({ entries }) => {
               <Trophy className="w-8 h-8 text-yellow-400 drop-shadow-md" />
             </div>
             <h4 className="font-black text-white text-2xl mb-1">{unitStats[0].name}</h4>
-            <div className="text-4xl font-black text-white mb-3">{unitStats[0].points.toLocaleString()}</div>
+            <div className="text-4xl font-black text-white mb-3"><AnimatedNumber value={unitStats[0].points} /></div>
             <div className="text-xs font-black bg-yellow-400 text-indigo-900 px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg">LÍDER</div>
           </div>
         )}
@@ -422,7 +422,7 @@ export const UnitRanking: React.FC<UnitRankingProps> = ({ entries }) => {
               <Medal className="w-6 h-6 text-amber-600" />
             </div>
             <h4 className="font-bold text-slate-700 text-lg mb-1">{unitStats[2].name}</h4>
-            <div className="text-2xl font-black text-slate-800 mb-2">{unitStats[2].points.toLocaleString()}</div>
+            <div className="text-2xl font-black text-slate-800 mb-2"><AnimatedNumber value={unitStats[2].points} /></div>
             <div className="text-[10px] font-bold bg-amber-50 text-amber-700 px-3 py-1 rounded-full uppercase tracking-widest">3º LUGAR</div>
           </div>
         )}
@@ -472,7 +472,7 @@ export const UnitRanking: React.FC<UnitRankingProps> = ({ entries }) => {
                     <div className="text-right flex items-center gap-6">
                       <div className="text-right">
                         <div className={`text-2xl font-black ${isHighlighted || isHovered ? 'text-indigo-600' : 'text-slate-800'}`}>
-                          {unit.points.toLocaleString()}
+                          <AnimatedNumber value={unit.points} />
                         </div>
                         <div className="text-[9px] text-slate-400 font-black uppercase tracking-widest">PONTOS</div>
                       </div>

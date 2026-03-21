@@ -3,7 +3,7 @@ import React, { useState, useMemo } from 'react';
 import { LogEntry, Student } from '../types';
 import { UNITS, ACTIVITIES } from '../constants';
 import { Trophy, Search, Filter, User, Star, Medal, Printer, FileText, X, History, Crown, ArrowUpRight } from 'lucide-react';
-
+import { AnimatedNumber } from './AnimatedNumber';
 interface StudentRankingProps {
   entries: LogEntry[];
   students: Student[];
@@ -414,7 +414,7 @@ export const StudentRanking: React.FC<StudentRankingProps> = ({ entries, student
               <h4 className="font-black text-slate-800 text-xl truncate w-full mb-1">{rankedStudents[1].name}</h4>
               <p className="text-xs text-slate-400 font-bold uppercase tracking-tighter mb-4">{rankedStudents[1].unitName}</p>
               <div className="bg-slate-100 text-slate-700 px-6 py-2 rounded-2xl font-black text-lg">
-                {rankedStudents[1].totalPoints.toLocaleString()} <span className="text-[10px] uppercase">pts</span>
+                <AnimatedNumber value={rankedStudents[1].totalPoints} /> <span className="text-[10px] uppercase">pts</span>
               </div>
             </div>
           </div>
@@ -431,7 +431,7 @@ export const StudentRanking: React.FC<StudentRankingProps> = ({ entries, student
               <h4 className="font-black text-white text-2xl truncate w-full mb-1">{rankedStudents[0].name}</h4>
               <p className="text-xs text-blue-400 font-bold uppercase tracking-widest mb-6">{rankedStudents[0].unitName}</p>
               <div className="bg-yellow-500 text-blue-950 px-8 py-3 rounded-[1.5rem] font-black text-3xl shadow-lg shadow-yellow-500/20">
-                {rankedStudents[0].totalPoints.toLocaleString()} <span className="text-xs uppercase opacity-80">pts</span>
+                <AnimatedNumber value={rankedStudents[0].totalPoints} /> <span className="text-xs uppercase opacity-80">pts</span>
               </div>
             </div>
           </div>
@@ -448,7 +448,7 @@ export const StudentRanking: React.FC<StudentRankingProps> = ({ entries, student
               <h4 className="font-black text-slate-800 text-xl truncate w-full mb-1">{rankedStudents[2].name}</h4>
               <p className="text-xs text-slate-400 font-bold uppercase tracking-tighter mb-4">{rankedStudents[2].unitName}</p>
               <div className="bg-amber-50 text-amber-800 px-6 py-2 rounded-2xl font-black text-lg">
-                {rankedStudents[2].totalPoints.toLocaleString()} <span className="text-[10px] uppercase">pts</span>
+                <AnimatedNumber value={rankedStudents[2].totalPoints} /> <span className="text-[10px] uppercase">pts</span>
               </div>
             </div>
           </div>
@@ -528,7 +528,7 @@ export const StudentRanking: React.FC<StudentRankingProps> = ({ entries, student
                   <div className="text-right flex items-center gap-6">
                     <div>
                       <div className="text-2xl font-black text-slate-900">
-                        {student.totalPoints.toLocaleString()}
+                        <AnimatedNumber value={student.totalPoints} />
                       </div>
                       <div className="text-[9px] text-slate-400 font-black uppercase tracking-widest text-right">PONTOS</div>
                     </div>
